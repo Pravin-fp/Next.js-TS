@@ -1,6 +1,7 @@
 
-
 import { useEffect, useState } from "react";
+import UserForm from "./UserForm";
+import Modal from "./Modal";
 
 type User = {
   email: string;
@@ -10,93 +11,102 @@ type User = {
   role: "admin" | "user";
 };
 
-export default function UserTable({
-  reload,
-  onEdit,
-}: {
-  reload: number;
-  onEdit: (user: User) => void;
-}) {
+export default function UserTable() {
   const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const [open, setOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+
+  async function loadUsers() {
+    const res = await fetch("/api/users");
+    const data = await res.json();
+    setUsers(data);
+    setLoading(false);
+  }
 
   useEffect(() => {
-    fetch("/api/users")
-      .then(res => res.json())
-      .then(data => {
-        setUsers(Array.isArray(data) ? data : []);
-      });
-  }, [reload]);
+    loadUsers();
+  }, []);
 
-  async function del(email: string) {
-    if (!confirm("Delete user permanently?")) return;
+  async function deleteUser(email: string) {
+    if (!confirm("Delete this user?")) return;
 
-    const res = await fetch(`/api/users/${encodeURIComponent(email)}`, {
+    await fetch(`/api/users/${encodeURIComponent(email)}`, {
       method: "DELETE",
     });
 
-    if (!res.ok) {
-      const msg = await res.text();
-      alert("Delete failed: " + msg);
-      return;
-    }
-
-    setUsers(prev => prev.filter(u => u.email !== email));
+    loadUsers();
   }
 
+  if (loading) return <p>Loading...</p>;
+
   return (
-    <div className="bg-white rounded-xl shadow-md overflow-hidden">
-      <div className="px-6 py-4 border-b">
-        <h2 className="text-lg font-semibold">Registered Users</h2>
+    <>
+      {/* HEADER */}
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-lg font-bold">Registered Users</h2>
+
+        <button
+          onClick={() => {
+            setEditingUser(null);
+            setOpen(true);
+          }}
+          className="bg-blue-600 text-white px-4 py-2 rounded"
+        >
+          Add User
+        </button>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-100 text-gray-700">
-            <tr>
-              <th className="px-6 py-3 text-left">Email</th>
-              <th className="px-6 py-3 text-left">Name</th>
-              <th className="px-6 py-3 text-left">Phone</th>
-              <th className="px-6 py-3 text-center">Actions</th>
+      {/* TABLE */}
+      <table className="w-full border">
+        <thead className="bg-gray-100">
+          <tr>
+            <th className="p-2 text-left">Email</th>
+            <th className="p-2 text-left">Name</th>
+            <th className="p-2 text-left">Phone</th>
+            <th className="p-2 text-left">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {users.map((u) => (
+            <tr key={u.email} className="border-t">
+              <td className="p-2">{u.email}</td>
+              <td className="p-2">{u.name}</td>
+              <td className="p-2">{u.phone}</td>
+              <td className="p-2 space-x-3">
+                <button
+                  className="text-blue-600"
+                  onClick={() => {
+                    setEditingUser(u);
+                    setOpen(true);
+                  }}
+                >
+                  Edit
+                </button>
+
+                <button
+                  className="text-red-600"
+                  onClick={() => deleteUser(u.email)}
+                >
+                  Delete
+                </button>
+              </td>
             </tr>
-          </thead>
+          ))}
+        </tbody>
+      </table>
 
-          <tbody className="divide-y">
-            {users.length === 0 && (
-              <tr>
-                <td colSpan={4} className="px-6 py-6 text-center text-gray-500">
-                  No users found
-                </td>
-              </tr>
-            )}
-
-            {users.map(user => (
-              <tr
-                key={user.email}
-                className="hover:bg-gray-50 transition"
-              >
-                <td className="px-6 py-3">{user.email}</td>
-                <td className="px-6 py-3">{user.name}</td>
-                <td className="px-6 py-3">{user.phone}</td>
-                <td className="px-6 py-3 text-center space-x-4">
-                  <button
-                    onClick={() => onEdit(user)}
-                    className="text-blue-600 hover:text-blue-800 font-medium"
-                  >
-                    Edit
-                  </button>
-
-                  <button
-                    onClick={() => del(user.email)}
-                    className="text-red-600 hover:text-red-800 font-medium"
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
+      {/* MODAL */}
+      <Modal open={open} onClose={() => setOpen(false)}>
+        <UserForm
+          editingUser={editingUser}
+          onSuccess={() => {
+            setOpen(false);
+            loadUsers();
+          }}
+        />
+      </Modal>
+    </>
   );
 }
