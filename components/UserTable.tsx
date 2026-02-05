@@ -14,6 +14,13 @@ type User = {
 export default function UserTable() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+
+const [sortOpen, setSortOpen] = useState(false);
+const [sortBy, setSortBy] = useState<
+  "none" | "email-asc" | "email-desc" | "name-asc" | "name-desc" | "phone-asc" | "phone-desc"
+>("none");
+
 
   const [open, setOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
@@ -38,64 +45,172 @@ export default function UserTable() {
 
     loadUsers();
   }
+   const filteredUsers = users.filter((u) =>{
+     const query = search.toLowerCase();
 
-  if (loading) return <p>Loading...</p>;
+  return (
+    u.email.toLowerCase().includes(query) ||
+    u.name.toLowerCase().includes(query) ||
+    u.phone.toLowerCase().includes(query)
+  );
+});
+
+const filteredAndSortedUsers = users
+  .filter((u) => {
+    const q = search.toLowerCase();
+    return (
+      u.email.toLowerCase().includes(q) ||
+      u.name.toLowerCase().includes(q) ||
+      u.phone.toLowerCase().includes(q)
+    );
+  })
+  .sort((a, b) => {
+    switch (sortBy) {
+      case "email-asc":
+        return a.email.localeCompare(b.email);
+      case "email-desc":
+        return b.email.localeCompare(a.email);
+      case "name-asc":
+        return a.name.localeCompare(b.name);
+      case "name-desc":
+        return b.name.localeCompare(a.name);
+      case "phone-asc":
+        return a.phone.localeCompare(b.phone);
+      case "phone-desc":
+        return b.phone.localeCompare(a.phone);
+      default:
+        return 0;
+    }
+  });
+
+  
+  if (loading)
+    return (
+      <div className="bg-slate-50 border border-slate-200 rounded-xl p-6 text-slate-600">
+        Loading users...
+      </div>
+    );
 
   return (
     <>
-      {/* HEADER */}
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-bold">Registered Users</h2>
+    
+      <div className="flex items-center justify-between mb-4">
+   
+        <input
+          placeholder="Search users..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-64 px-3 py-2 text-sm rounded-md border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+        />
+    
+          <div className="relative">
+  <button
+    onClick={() => setSortOpen(!sortOpen)}
+    className="flex items-center gap-2 border border-emerald-500 text-emerald-700 px-3 py-2 rounded-md bg-white hover:bg-emerald-50"
+  >
+    ⬍ Sort by
+  </button>
+
+  {sortOpen && (
+    <div className="absolute right-0 mt-2 w-64 bg-white border border-slate-200 rounded-lg shadow-lg z-20">
+      {[
+        { label: "No sorting", value: "none" },
+        { label: "Alphabetical", value: "email-asc", hint: "A → Z" },
+        { label: "Reverse alphabetical", value: "email-desc", hint: "Z → A" },
+        { label: "Name - Ascending", value: "name-asc", hint: "A → Z" },
+        { label: "Name - Descending", value: "name-desc", hint: "Z → A" },
+        { label: "Phone - Ascending", value: "phone-asc", hint: "Low → High" },
+        { label: "Phone - Descending", value: "phone-desc", hint: "High → Low" },
+      ].map((item) => (
+        <button
+          key={item.value}
+          onClick={() => {
+            setSortBy(item.value as any);
+            setSortOpen(false);
+          }}
+          className="w-full flex items-center justify-between px-4 py-2 text-sm hover:bg-slate-50"
+        >
+          <span>{item.label}</span>
+
+          <div className="flex items-center gap-2">
+            {item.hint && (
+              <span className="text-slate-400 text-xs">
+                {item.hint}
+              </span>
+            )}
+            {sortBy === item.value && (
+              <span className="text-emerald-600 font-bold">✓</span>
+            )}
+          </div>
+        </button>
+      ))}
+    </div>
+  )}
+</div>
+
 
         <button
           onClick={() => {
             setEditingUser(null);
             setOpen(true);
           }}
-          className="bg-blue-600 text-white px-4 py-2 rounded"
+          className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-md text-sm font-medium"
         >
           Add User
         </button>
       </div>
 
-      {/* TABLE */}
-      <table className="w-full border">
-        <thead className="bg-gray-100">
-          <tr>
-            <th className="p-2 text-left">Email</th>
-            <th className="p-2 text-left">Name</th>
-            <th className="p-2 text-left">Phone</th>
-            <th className="p-2 text-left">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {users.map((u) => (
-            <tr key={u.email} className="border-t">
-              <td className="p-2">{u.email}</td>
-              <td className="p-2">{u.name}</td>
-              <td className="p-2">{u.phone}</td>
-              <td className="p-2 space-x-3">
-                <button
-                  className="text-blue-600"
-                  onClick={() => {
-                    setEditingUser(u);
-                    setOpen(true);
-                  }}
-                >
-                  Edit
-                </button>
-
-                <button
-                  className="text-red-600"
-                  onClick={() => deleteUser(u.email)}
-                >
-                  Delete
-                </button>
-              </td>
+      {/* TABLE CARD */}
+      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+        <table className="w-full text-sm">
+          <thead className="bg-slate-50 text-slate-600">
+            <tr>
+              <th className="px-5 py-3 text-left">Email</th>
+              <th className="px-5 py-3 text-left">Name</th>
+              <th className="px-5 py-3 text-left">Phone</th>
+              <th className="px-5 py-3 text-left">Actions</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+
+          <tbody>
+           
+            {filteredAndSortedUsers.map((u) => (
+
+              <tr
+                key={u.email}
+                className="border-t hover:bg-slate-50 transition"
+              >
+                <td className="px-5 py-4 text-slate-700">{u.email}</td>
+
+                <td className="px-5 py-4 font-medium text-slate-800">
+                  {u.name}
+                </td>
+
+                <td className="px-5 py-4 text-slate-700">{u.phone}</td>
+
+                <td className="px-5 py-4 space-x-4">
+                  <button
+                    onClick={() => {
+                      setEditingUser(u);
+                      setOpen(true);
+                    }}
+                    className="text-emerald-600 hover:underline"
+                  >
+                    Edit
+                  </button>
+
+                  <button
+                    onClick={() => deleteUser(u.email)}
+                    className="text-red-500 hover:underline"
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       {/* MODAL */}
       <Modal open={open} onClose={() => setOpen(false)}>
