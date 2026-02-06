@@ -24,11 +24,21 @@ export default function Sidebar() {
       {/* Navigation */}
       <nav className="flex-1 px-3 py-6 space-y-1">
         <button
-          className="w-full flex items-center gap-3 px-4 py-2 rounded-md bg-emerald-900 text-white"
+         onClick={() => router.push("/dashboard")}
+          className="w-full text-left px-4 py-2 rounded-md bg-emerald-900 text-white hover:bg-emerald-800"
+      
         >
           Users
         </button>
-      </nav>
+      
+      
+      <button
+       onClick={() => router.push("/sample-users")}
+        className="w-full text-left px-4 py-2 rounded-md bg-emerald-900 text-white hover:bg-emerald-800"
+         >
+            Sample Users
+       </button>
+</nav>
 
       {/* Logout */}
       <div className="p-4 border-t border-emerald-900">
