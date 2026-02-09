@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import UserForm from "./UserForm";
 import Modal from "./Modal";
+import { FaEdit, FaTrash } from "react-icons/fa";
 
 type User = {
   email: string;
@@ -194,16 +195,20 @@ const filteredAndSortedUsers = users
                       setEditingUser(u);
                       setOpen(true);
                     }}
+                    title="Edit"
                     className="text-emerald-600 hover:underline"
                   >
-                    Edit
+                    {/* Edit */}
+                     <FaEdit size={16} />
                   </button>
 
                   <button
                     onClick={() => deleteUser(u.email)}
+                     title="Delete"
                     className="text-red-500 hover:underline"
                   >
-                    Delete
+                    {/* Delete */}
+                    <FaTrash size={16} />
                   </button>
                 </td>
               </tr>

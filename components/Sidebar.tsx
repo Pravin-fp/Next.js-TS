@@ -1,6 +1,5 @@
 
 import { useRouter } from "next/router";
-
 export default function Sidebar() {
   const router = useRouter();
 
@@ -14,7 +13,7 @@ export default function Sidebar() {
   }
 
   return (
-    <aside className="w-64 min-h-screen bg-emerald-950 text-emerald-100 flex flex-col">
+    <aside className="fixed left-0 top-0 w-64 h-screen bg-emerald-950 text-white flex flex-col">
       {/* Logo / Title */}
       <div className="px-6 py-5 text-xl font-semibold text-white border-b border-slate-900">
         Admin Panel
@@ -36,7 +35,7 @@ export default function Sidebar() {
        onClick={() => router.push("/sample-users")}
         className="w-full text-left px-4 py-2 rounded-md bg-emerald-900 text-white hover:bg-emerald-800"
          >
-            Sample Users
+            Render
        </button>
 </nav>
 
