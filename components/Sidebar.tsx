@@ -35,8 +35,15 @@ export default function Sidebar() {
        onClick={() => router.push("/sample-users")}
         className="w-full text-left px-4 py-2 rounded-md bg-emerald-900 text-white hover:bg-emerald-800"
          >
-            Render
+            Renter
        </button>
+       <button
+  onClick={() => router.push("/rental")}
+  className="w-full text-left px-4 py-2 rounded bg-emerald-900 text-white hover:bg-emerald-800"
+>
+  Rental
+</button>
+
 </nav>
 
       {/* Logout */}
