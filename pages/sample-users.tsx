@@ -127,7 +127,7 @@ const sortedUsers = [...filteredUsers].sort((a, b) => {
 return (
     <Layout>
       {/* 🔰 PAGE TITLE */}
-      <h1 className="text-xl font-semibold mb-4">Render Users</h1>
+      <h1 className="text-xl font-semibold mb-4">Renter Users</h1>
 
       {/* 🔍 SEARCH + SORT + ADD */}
       <div className="flex justify-between items-center mb-4">
