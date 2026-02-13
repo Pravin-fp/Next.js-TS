@@ -29,6 +29,7 @@ const [sortBy, setSortBy] = useState<
   async function loadUsers() {
     const res = await fetch("/api/users");
     const data = await res.json();
+    console.log("API RESPONSE:", data);
     setUsers(data);
     setLoading(false);
   }
@@ -46,15 +47,6 @@ const [sortBy, setSortBy] = useState<
 
     loadUsers();
   }
-   const filteredUsers = users.filter((u) =>{
-     const query = search.toLowerCase();
-
-  return (
-    u.email.toLowerCase().includes(query) ||
-    u.name.toLowerCase().includes(query) ||
-    u.phone.toLowerCase().includes(query)
-  );
-});
 
 const filteredAndSortedUsers = users
   .filter((u) => {
@@ -230,3 +222,6 @@ const filteredAndSortedUsers = users
     </>
   );
 }
+
+
+

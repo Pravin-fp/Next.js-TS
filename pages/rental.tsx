@@ -1,21 +1,104 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import Layout from "../components/Layout";
 import RentalTable from "../components/RentalTable";
 import RentalModal from "../components/RentalModal";
-import { RentalUser } from "../types/rental";
+import { RentalUser, Renter, Rental } from "../types/rental";
+import { getRentals, createRental } from "../lib/rentalsApi";
+import { getSampleUsers } from "../lib/sampleUsersApi";
+
 export default function RentalPage() {
-  const [rentals, setRentals] = useState<RentalUser[]>([]);
+  const [rentals, setRentals] = useState<Rental[]>([]);
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
+  const [renters, setRenters] = useState<Renter[]>([]);
 
-  const filtered = rentals.filter((r) =>
-    r.renterName.toLowerCase().includes(search.toLowerCase()) ||
-    r.email.toLowerCase().includes(search.toLowerCase())
-  );
+  /* =============================
+     LOAD RENTALS
+  ============================== */
+  useEffect(() => {
+    async function loadRentals() {
+      try {
+        const data = await getRentals();
+        setRentals(data);
+      } catch (err) {
+        console.error("Failed to load rentals");
+      }
+    }
+
+    loadRentals();
+  }, []);
+
+  /* =============================
+     LOAD RENTERS
+  ============================== */
+  useEffect(() => {
+    async function loadRenters() {
+      try {
+        const data = await getSampleUsers();
+
+        const formattedRenters: Renter[] = data.map(
+          (u: any, index: number) => ({
+            id: u.id ?? index + 1,
+            name: u.name,
+            email: u.email,
+            phone: u.phone,
+            status: u.status,
+          })
+        );
+
+        setRenters(formattedRenters);
+      } catch (err) {
+        console.error("Failed to load renters");
+      }
+    }
+
+    loadRenters();
+  }, []);
+
+  /* =============================
+     SEARCH FILTER
+  ============================== */
+  const filtered = rentals.filter((r) => {
+    const renter = renters.find(
+      (ren) => ren.id === r.renterId
+    );
+
+    const renterName = renter?.name || "";
+
+    return renterName
+      .toLowerCase()
+      .includes(search.toLowerCase());
+  });
+
+
+const handleSave = async (form: RentalUser) => {
+  try {
+    const payload = {
+      renterId: Number(form.id), // convert id → renterId
+      paymentMethods: form.paymentMethods,
+      rentalType: form.rentalType,
+      dailyFee: form.dailyFee,
+      deposit: form.deposit,
+      driverType: form.driverType,
+      startDate: form.startDate,
+      endDate: form.endDate,
+    };
+
+    const saved = await createRental(payload);
+
+    setRentals((prev) => [saved, ...prev]);
+    setOpen(false);
+  } catch (err) {
+    console.error("Save failed");
+  }
+};
 
   return (
     <Layout>
-      <h1 className="text-xl font-semibold mb-4">Rental Users</h1>
+      <h1 className="text-xl font-semibold mb-4">
+        Rental Users
+      </h1>
 
       <div className="flex justify-between mb-4">
         <input
@@ -33,15 +116,15 @@ export default function RentalPage() {
         </button>
       </div>
 
-      <RentalTable users={filtered} />
+      <RentalTable
+        users={filtered}
+      />
 
       <RentalModal
         open={open}
         onClose={() => setOpen(false)}
-        onSave={(rental: RentalUser) => {
-          setRentals((prev) => [rental, ...prev]); 
-          setOpen(false);
-        }}
+        onSave={handleSave}
+        renters={renters}
       />
     </Layout>
   );
