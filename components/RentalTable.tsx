@@ -1,5 +1,9 @@
-import { RentalUser } from "../types/rental";
-export default function RentalTable({ users }: { users: RentalUser[] }) {
+import { Rental,RentalUser } from "../types/rental";
+type Props = {
+  users: Rental[];
+  
+};
+export default function RentalTable({ users}: Props) {
   return (
     <div className="border rounded overflow-auto max-h-[500px]">
       <table className="min-w-[1200px] w-full">
@@ -23,10 +27,10 @@ export default function RentalTable({ users }: { users: RentalUser[] }) {
 
         <tbody>
           {users.map((u) => (
-            <tr key={u.id} className="border-t">
+            <tr key={u.rentalId} className="border-t">
               {/* NAME */}
               <td className="sticky left-0 bg-white px-4 py-2 font-medium">
-                {u.renterName}
+                {u.renterId}
               </td>
 
               {/* PAYMENT METHODS */}
@@ -47,9 +51,11 @@ export default function RentalTable({ users }: { users: RentalUser[] }) {
 
               {/* ACTIONS */}
               <td className="px-4 py-2 space-x-3">
-                <button className="text-green-600 hover:text-green-800">
+                
+                <button   className="text-green-600 hover:text-green-800">
                   ✏️
                 </button>
+                
                 <button className="text-red-600 hover:text-red-800">
                   🗑
                 </button>

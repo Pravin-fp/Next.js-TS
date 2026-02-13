@@ -1,15 +1,34 @@
+
 import { useState } from "react";
 import { RentalUser, PaymentMethod } from "../types/rental";
+
+type Renter = {
+  id: number;
+  name: string;
+  email: string;
+  phone: string;
+  status: "active" | "inactive";
+};
 
 type Props = {
   open: boolean;
   onClose: () => void;
   onSave: (rental: RentalUser) => void;
+  renters: Renter[];
 };
 
-export default function RentalModal({ open, onClose, onSave }: Props) {
-  const [form, setForm] = useState<RentalUser>({
-    id: crypto.randomUUID(),
+export default function RentalModal({
+  open,
+  onClose,
+  onSave,
+  renters,
+}: Props) {
+
+  /* =============================
+     EMPTY FORM TEMPLATE
+  ============================== */
+  const emptyForm: RentalUser = {
+    id: "",
     renterName: "",
     email: "",
     phone: "",
@@ -22,70 +41,121 @@ export default function RentalModal({ open, onClose, onSave }: Props) {
     driverType: "uber",
     startDate: "",
     endDate: "",
-  });
+  };
+
+  const [form, setForm] = useState<RentalUser>(emptyForm);
 
   if (!open) return null;
 
+  /* =============================
+     FIELD UPDATE
+  ============================== */
   const update = <K extends keyof RentalUser>(
     key: K,
     value: RentalUser[K]
-  ) => setForm((p) => ({ ...p, [key]: value }));
+  ) => {
+    setForm((prev) => ({
+      ...prev,
+      [key]: value,
+    }));
+  };
 
-  /* PAYMENT METHODS */
+  /* =============================
+     HANDLE RENTER SELECT
+  ============================== */
+  const handleRenterChange = (renterId: string) => {
+    const selected = renters.find(
+      (r) => r.id.toString() === renterId
+    );
+
+    if (!selected) return;
+
+    setForm((prev) => ({
+      ...prev,
+      id: renterId,
+      renterName: selected.name,
+      email: selected.email,
+      phone: selected.phone,
+    }));
+  };
+
+  /* =============================
+     PAYMENT METHODS
+  ============================== */
   const addPayment = () =>
-    setForm((p) => ({
-      ...p,
+    setForm((prev) => ({
+      ...prev,
       paymentMethods: [
-        ...p.paymentMethods,
+        ...prev.paymentMethods,
         { id: crypto.randomUUID(), method: "cashapp", value: "" },
       ],
     }));
 
-  const updatePayment = (id: string, value: string) =>
-    setForm((p) => ({
-      ...p,
-      paymentMethods: p.paymentMethods.map((m) =>
-        m.id === id ? { ...m, value } : m
+  const updatePayment = (
+    id: string,
+    field: keyof PaymentMethod,
+    value: any
+  ) =>
+    setForm((prev) => ({
+      ...prev,
+      paymentMethods: prev.paymentMethods.map((m) =>
+        m.id === id ? { ...m, [field]: value } : m
       ),
     }));
 
   const removePayment = (id: string) =>
-    setForm((p) => ({
-      ...p,
-      paymentMethods: p.paymentMethods.filter((m) => m.id !== id),
+    setForm((prev) => ({
+      ...prev,
+      paymentMethods: prev.paymentMethods.filter((m) => m.id !== id),
     }));
 
+  /* =============================
+     SAVE HANDLER
+  ============================== */
+  const handleSubmit = () => {
+    onSave(form);
+    setForm(emptyForm);
+    onClose();
+  };
+
+  /* =============================
+     UI
+  ============================== */
   return (
     <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
       <div className="w-[760px] bg-emerald-50 rounded-xl shadow-xl p-6">
-        <h2 className="text-xl font-semibold mb-6">Add Rental</h2>
+        <h2 className="text-xl font-semibold mb-6">
+          Add Rental
+        </h2>
 
-        {/* FORM GRID */}
         <div className="grid grid-cols-2 gap-3 mt-44">
-          {/* RENTER */}
+
+          {/* RENTER SELECT */}
           <select
             className="border rounded px-3 py-2"
-            value={form.renterName}
-            onChange={(e) => update("renterName", e.target.value)}
+            value={form.id}
+            onChange={(e) => handleRenterChange(e.target.value)}
           >
             <option value="">Select Renter</option>
-            <option value="John">John</option>
-            <option value="Alex">Alex</option>
-            <option value="Ravi">Ravi</option>
+            {renters.map((r) => (
+              <option key={r.id} value={r.id}>
+                {r.name} ({r.status})
+              </option>
+            ))}
           </select>
 
           <input
             className="border rounded px-3 py-2"
             placeholder="Email"
             value={form.email}
-            onChange={(e) => update("email", e.target.value)}
+            readOnly
           />
 
           <input
             className="border rounded px-3 py-2"
             placeholder="Phone"
             value={form.phone}
-            onChange={(e) => update("phone", e.target.value)}
+            readOnly
           />
 
           {/* PAYMENT METHODS */}
@@ -93,6 +163,7 @@ export default function RentalModal({ open, onClose, onSave }: Props) {
             <div className="flex justify-between mb-1">
               <span className="font-medium">Payment Methods</span>
               <button
+                type="button"
                 onClick={addPayment}
                 className="text-orange-600 text-sm"
               >
@@ -105,18 +176,29 @@ export default function RentalModal({ open, onClose, onSave }: Props) {
                 key={p.id}
                 className="border border-orange-300 rounded-lg p-3 flex items-center gap-3 mb-2"
               >
-                <select className="border rounded px-2 py-1">
-                  <option value="cashapp">💰 Cash App</option>
+                <select
+                  className="border rounded px-2 py-1"
+                  value={p.method}
+                  onChange={(e) =>
+                    updatePayment(p.id, "method", e.target.value)
+                  }
+                >
+                  <option value="cashapp">Cash App</option>
+                  <option value="gpay">Google Pay</option>
+                  <option value="phonepe">PhonePe</option>
                 </select>
 
                 <input
                   className="border rounded px-3 py-1 flex-1"
                   placeholder="@username or ID"
                   value={p.value}
-                  onChange={(e) => updatePayment(p.id, e.target.value)}
+                  onChange={(e) =>
+                    updatePayment(p.id, "value", e.target.value)
+                  }
                 />
 
                 <button
+                  type="button"
                   onClick={() => removePayment(p.id)}
                   className="text-red-500"
                 >
@@ -130,7 +212,9 @@ export default function RentalModal({ open, onClose, onSave }: Props) {
           <select
             className="border rounded px-3 py-2 col-span-2"
             value={form.rentalType}
-            onChange={(e) => update("rentalType", e.target.value as any)}
+            onChange={(e) =>
+              update("rentalType", e.target.value as any)
+            }
           >
             <option value="daily">Daily Renter</option>
             <option value="weekly">Weekly Renter</option>
@@ -153,7 +237,9 @@ export default function RentalModal({ open, onClose, onSave }: Props) {
           <select
             className="border rounded px-3 py-2 col-span-2"
             value={form.driverType}
-            onChange={(e) => update("driverType", e.target.value as any)}
+            onChange={(e) =>
+              update("driverType", e.target.value as any)
+            }
           >
             <option value="uber">Uber Fleet</option>
             <option value="ola">Ola Fleet</option>
@@ -175,16 +261,22 @@ export default function RentalModal({ open, onClose, onSave }: Props) {
           />
         </div>
 
-        {/* ACTIONS */}
+        {/* ACTION BUTTONS */}
         <div className="flex justify-end gap-3 mt-6">
           <button
-            onClick={onClose}
+            type="button"
+            onClick={() => {
+              setForm(emptyForm);
+              onClose();
+            }}
             className="px-5 py-2 rounded bg-red-100 text-red-600"
           >
             Cancel
           </button>
+
           <button
-            onClick={() => onSave(form)}
+            type="button"
+            onClick={handleSubmit}
             className="px-5 py-2 rounded bg-green-600 text-white"
           >
             Create
