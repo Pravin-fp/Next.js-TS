@@ -51,13 +51,15 @@ export default function RentalModal({
 
 useEffect(() => {
   if (!initialData) return;
-
+    const selectedRenter = renters.find(
+    (r) => r.id === initialData.renterId
+  )
   setForm({
     rentalId: initialData.rentalId,
     id: String(initialData.renterId),
-    renterName: "",
-    email: "",
-    phone: "",
+    renterName: selectedRenter?.name || "",
+    email:selectedRenter?.email ||"" ,
+    phone:selectedRenter?.phone ||"" ,
     paymentMethods:
       initialData.paymentMethods?.map((p: any) => ({
         id: p.id,
@@ -73,7 +75,7 @@ useEffect(() => {
     startDate: initialData.startDate,
     endDate: initialData.endDate,
   });
-}, [initialData]);
+}, [initialData, renters]);
 
 
 

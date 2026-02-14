@@ -1,11 +1,12 @@
-import { Rental,RentalUser } from "../types/rental";
+import { Rental,RentalUser,Renter } from "../types/rental";
 type Props = {
   users: Rental[];
+  renters: Renter[];
   onEdit: (rental: Rental) => void;
   onDelete: (id: string) => void;
   
 };
-export default function RentalTable({ users,
+export default function RentalTable({ users,renters,
   onEdit,
   onDelete,}: Props) {
   return (
@@ -34,7 +35,10 @@ export default function RentalTable({ users,
             <tr key={u.rentalId} className="border-t">
               {/* NAME */}
               <td className="sticky left-0 bg-white px-4 py-2 font-medium">
-                {u.renterId}
+                {/* {u.renterId} */}
+                 {
+    renters.find(r => r.id === u.renterId)?.name || "Unknown"
+  }
               </td>
 
               {/* PAYMENT METHODS */}

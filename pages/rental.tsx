@@ -96,8 +96,13 @@ const handleDelete = async (id: string) => {
 const handleSave = async (form: any) => {
   try {
     if (editingRental) {
-      await updateRental(editingRental.rentalId, {
+      const id = editingRental.rentalId;
+
+      await updateRental(id, {
         renterId: Number(form.id),
+        renterName: form.renterName,
+        email: form.email,
+        phone: form.phone,
         paymentMethods: form.paymentMethods,
         rentalType: form.rentalType,
         dailyFee: form.dailyFee,
@@ -107,16 +112,33 @@ const handleSave = async (form: any) => {
         endDate: form.endDate,
       });
 
-      setRentals((prev) =>
-        prev.map((r) =>
-          r.rentalId === editingRental.rentalId
-            ? { ...r, ...form }
+      // ✅ UPDATE STATE PROPERLY
+      setRentals(prev =>
+        prev.map(r =>
+          r.rentalId === id
+            ? {
+                ...r,
+                renterId: Number(form.id),
+                renterName: form.renterName,
+                email: form.email,
+                phone: form.phone,
+                paymentMethods: form.paymentMethods,
+                rentalType: form.rentalType,
+                dailyFee: form.dailyFee,
+                deposit: form.deposit,
+                driverType: form.driverType,
+                startDate: form.startDate,
+                endDate: form.endDate,
+              }
             : r
         )
       );
     } else {
       const saved = await createRental({
         renterId: Number(form.id),
+        renterName: form.renterName,
+        email: form.email,
+        phone: form.phone,
         paymentMethods: form.paymentMethods,
         rentalType: form.rentalType,
         dailyFee: form.dailyFee,
@@ -126,7 +148,8 @@ const handleSave = async (form: any) => {
         endDate: form.endDate,
       });
 
-      setRentals((prev) => [saved, ...prev]);
+      // ✅ ADD NEW ITEM CORRECTLY
+      setRentals(prev => [saved, ...prev]);
     }
 
     setEditingRental(null);
@@ -135,6 +158,7 @@ const handleSave = async (form: any) => {
     console.error("Save failed", err);
   }
 };
+
 return (
     <Layout>
       <h1 className="text-xl font-semibold mb-4">
@@ -159,6 +183,7 @@ return (
      
       <RentalTable
   users={filtered}
+  renters={renters}
   onEdit={handleEdit}
   onDelete={handleDelete}
 />
