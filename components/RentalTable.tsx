@@ -1,9 +1,13 @@
 import { Rental,RentalUser } from "../types/rental";
 type Props = {
   users: Rental[];
+  onEdit: (rental: Rental) => void;
+  onDelete: (id: string) => void;
   
 };
-export default function RentalTable({ users}: Props) {
+export default function RentalTable({ users,
+  onEdit,
+  onDelete,}: Props) {
   return (
     <div className="border rounded overflow-auto max-h-[500px]">
       <table className="min-w-[1200px] w-full">
@@ -52,11 +56,13 @@ export default function RentalTable({ users}: Props) {
               {/* ACTIONS */}
               <td className="px-4 py-2 space-x-3">
                 
-                <button   className="text-green-600 hover:text-green-800">
+                <button type="button"
+                  onClick={() => onEdit(u)}  className="text-green-600 hover:text-green-800 cursor-pointer">
                   ✏️
                 </button>
                 
-                <button className="text-red-600 hover:text-red-800">
+                <button  type="button"
+                  onClick={() => onDelete(u.rentalId)} className="text-red-600 hover:text-red-800 cursor-pointer">
                   🗑
                 </button>
               </td>

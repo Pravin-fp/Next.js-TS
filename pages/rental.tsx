@@ -4,7 +4,7 @@ import Layout from "../components/Layout";
 import RentalTable from "../components/RentalTable";
 import RentalModal from "../components/RentalModal";
 import { RentalUser, Renter, Rental } from "../types/rental";
-import { getRentals, createRental } from "../lib/rentalsApi";
+import { getRentals, createRental,updateRental,deleteRental } from "../lib/rentalsApi";
 import { getSampleUsers } from "../lib/sampleUsersApi";
 
 export default function RentalPage() {
@@ -12,6 +12,7 @@ export default function RentalPage() {
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
   const [renters, setRenters] = useState<Renter[]>([]);
+  const [editingRental, setEditingRental] = useState<Rental | null>(null);
 
   /* =============================
      LOAD RENTALS
@@ -71,30 +72,70 @@ export default function RentalPage() {
       .includes(search.toLowerCase());
   });
 
+const handleEdit = (rental: Rental) => {
+  setEditingRental(rental);
+  setOpen(true);
+};
+const handleDelete = async (id: string) => {
+  const confirmDelete = window.confirm(
+    "Are you sure you want to delete this rental?"
+  );
+  if (!confirmDelete) return;
 
-const handleSave = async (form: RentalUser) => {
   try {
-    const payload = {
-      renterId: Number(form.id), // convert id → renterId
-      paymentMethods: form.paymentMethods,
-      rentalType: form.rentalType,
-      dailyFee: form.dailyFee,
-      deposit: form.deposit,
-      driverType: form.driverType,
-      startDate: form.startDate,
-      endDate: form.endDate,
-    };
+    await deleteRental(id);
 
-    const saved = await createRental(payload);
-
-    setRentals((prev) => [saved, ...prev]);
-    setOpen(false);
+    setRentals((prev) =>
+      prev.filter((r) => r.rentalId !== id)
+    );
   } catch (err) {
-    console.error("Save failed");
+    console.error("Delete failed");
   }
 };
 
-  return (
+const handleSave = async (form: any) => {
+  try {
+    if (editingRental) {
+      await updateRental(editingRental.rentalId, {
+        renterId: Number(form.id),
+        paymentMethods: form.paymentMethods,
+        rentalType: form.rentalType,
+        dailyFee: form.dailyFee,
+        deposit: form.deposit,
+        driverType: form.driverType,
+        startDate: form.startDate,
+        endDate: form.endDate,
+      });
+
+      setRentals((prev) =>
+        prev.map((r) =>
+          r.rentalId === editingRental.rentalId
+            ? { ...r, ...form }
+            : r
+        )
+      );
+    } else {
+      const saved = await createRental({
+        renterId: Number(form.id),
+        paymentMethods: form.paymentMethods,
+        rentalType: form.rentalType,
+        dailyFee: form.dailyFee,
+        deposit: form.deposit,
+        driverType: form.driverType,
+        startDate: form.startDate,
+        endDate: form.endDate,
+      });
+
+      setRentals((prev) => [saved, ...prev]);
+    }
+
+    setEditingRental(null);
+    setOpen(false);
+  } catch (err) {
+    console.error("Save failed", err);
+  }
+};
+return (
     <Layout>
       <h1 className="text-xl font-semibold mb-4">
         Rental Users
@@ -115,17 +156,24 @@ const handleSave = async (form: RentalUser) => {
           Add Rental
         </button>
       </div>
-
+     
       <RentalTable
-        users={filtered}
-      />
-
+  users={filtered}
+  onEdit={handleEdit}
+  onDelete={handleDelete}
+/>
       <RentalModal
-        open={open}
-        onClose={() => setOpen(false)}
-        onSave={handleSave}
-        renters={renters}
-      />
+  open={open}
+  onClose={() => {
+    setOpen(false);
+    setEditingRental(null);
+  }}
+  onSave={handleSave}
+  renters={renters}
+  initialData={editingRental}
+/>
+
+
     </Layout>
   );
 }

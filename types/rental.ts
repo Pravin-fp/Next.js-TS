@@ -11,6 +11,7 @@ export type PaymentMethod = {
   value: string;                   
 };
 export type RentalUser = {
+  rentalId?: string;
   id: string;
   renterName: string;
   email: string;
