@@ -41,35 +41,38 @@ export async function createRental(
   return res.json();
 }
 
-/* =========================================
-   UPDATE RENTAL
-========================================= */
 export async function updateRental(
   rentalId: string,
-  rental: Partial<Rental>
-): Promise<void> {
-  const res = await fetch(`${BASE_URL}/rentals/${rentalId}`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(rental),
-  });
+  rental: any
+) {
+  const res = await fetch(
+    `${BASE_URL}/rentals/${rentalId}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(rental),
+    }
+  );
 
   if (!res.ok) {
     throw new Error("Failed to update rental");
   }
-}
 
-/* =========================================
-   SOFT DELETE RENTAL
-========================================= */
-export async function deleteRental(rentalId: string): Promise<void> {
-  const res = await fetch(`${BASE_URL}/rentals/${rentalId}`, {
-    method: "DELETE",
-  });
+  return res.json();
+}
+export async function deleteRental(rentalId: string) {
+  const res = await fetch(
+    `${BASE_URL}/rentals/${rentalId}`,
+    {
+      method: "DELETE",
+    }
+  );
 
   if (!res.ok) {
     throw new Error("Failed to delete rental");
   }
+
+  return res.json();
 }

@@ -1,6 +1,7 @@
 
-import { useState } from "react";
-import { RentalUser, PaymentMethod } from "../types/rental";
+import { useState, useEffect } from "react";
+import { RentalUser, PaymentMethod, Rental } from "../types/rental";
+
 
 type Renter = {
   id: number;
@@ -15,6 +16,7 @@ type Props = {
   onClose: () => void;
   onSave: (rental: RentalUser) => void;
   renters: Renter[];
+initialData?: Rental | null;
 };
 
 export default function RentalModal({
@@ -22,12 +24,14 @@ export default function RentalModal({
   onClose,
   onSave,
   renters,
+  initialData,
 }: Props) {
 
   /* =============================
      EMPTY FORM TEMPLATE
   ============================== */
   const emptyForm: RentalUser = {
+    rentalId: "",
     id: "",
     renterName: "",
     email: "",
@@ -44,6 +48,34 @@ export default function RentalModal({
   };
 
   const [form, setForm] = useState<RentalUser>(emptyForm);
+
+useEffect(() => {
+  if (!initialData) return;
+
+  setForm({
+    rentalId: initialData.rentalId,
+    id: String(initialData.renterId),
+    renterName: "",
+    email: "",
+    phone: "",
+    paymentMethods:
+      initialData.paymentMethods?.map((p: any) => ({
+        id: p.id,
+        method: p.method as "cashapp" | "gpay" | "phonepe",
+        value: p.value,
+      })) || [
+        { id: crypto.randomUUID(), method: "cashapp", value: "" },
+      ],
+    rentalType: initialData.rentalType,
+    dailyFee: initialData.dailyFee,
+    deposit: initialData.deposit,
+    driverType: initialData.driverType,
+    startDate: initialData.startDate,
+    endDate: initialData.endDate,
+  });
+}, [initialData]);
+
+
 
   if (!open) return null;
 
@@ -112,11 +144,17 @@ export default function RentalModal({
   /* =============================
      SAVE HANDLER
   ============================== */
-  const handleSubmit = () => {
-    onSave(form);
-    setForm(emptyForm);
-    onClose();
-  };
+
+const handleSubmit = () => {
+  const rentalToSave = initialData
+    ? { ...initialData, ...form }
+    : form;
+
+  onSave(rentalToSave);
+  setForm(emptyForm);
+  onClose();
+};
+
 
   /* =============================
      UI
@@ -124,9 +162,11 @@ export default function RentalModal({
   return (
     <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
       <div className="w-[760px] bg-emerald-50 rounded-xl shadow-xl p-6">
+       
         <h2 className="text-xl font-semibold mb-6">
-          Add Rental
-        </h2>
+  {initialData ? "Edit Rental" : "Add Rental"}
+</h2>
+
 
         <div className="grid grid-cols-2 gap-3 mt-44">
 
@@ -279,7 +319,8 @@ export default function RentalModal({
             onClick={handleSubmit}
             className="px-5 py-2 rounded bg-green-600 text-white"
           >
-            Create
+            {/* Create */}
+            {initialData ? "Update" : "Create"}
           </button>
         </div>
       </div>
