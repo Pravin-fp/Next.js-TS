@@ -28,6 +28,9 @@ export type RentalUser = {
 export type Rental = {
   rentalId: string;
   renterId: number;
+  renterName: string;  
+  email: string;       
+  phone: string;
   paymentMethods: {
     id: string;
     method: string;
@@ -40,4 +43,6 @@ export type Rental = {
   startDate: string;
   endDate: string;
   createdAt: string;
+   updatedAt: string;
+  isDeleted: boolean;
 };
