@@ -159,6 +159,7 @@ return (
      
       <RentalTable
   users={filtered}
+  renters={renters}
   onEdit={handleEdit}
   onDelete={handleDelete}
 />
