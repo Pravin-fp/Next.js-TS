@@ -50,7 +50,7 @@ useEffect(() => {
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
       <div className="bg-gray-50 rounded-xl w-[520px] p-6 shadow-2xl border border-gray-200">
         <h2 className="text-xl font-semibold mb-4">
-          {user ? "Edit User" : "Add User"}
+          {user ? "Edit User" : "Add Renter"}
         </h2>
 
         <div className="space-y-3">

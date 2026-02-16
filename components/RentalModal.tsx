@@ -170,7 +170,7 @@ const handleSubmit = () => {
 </h2>
 
 
-        <div className="grid grid-cols-2 gap-3 mt-44">
+        <div className="grid grid-cols-2 gap-3 mt-4">
 
           {/* RENTER SELECT */}
           <select
